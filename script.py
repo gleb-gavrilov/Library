@@ -11,7 +11,7 @@ import argparse
 import re
 
 
-def download_txt(url, filename, folder='books/'):
+def download_txt(url, filename, folder='books'):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
@@ -24,7 +24,7 @@ def download_txt(url, filename, folder='books/'):
     return path
 
 
-def download_image(url, filename, folder='images/'):
+def download_image(url, filename, folder='images'):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
@@ -177,6 +177,9 @@ def init_argparse():
     download_parser.add_argument('--skip_txt', action='store_true',
                                  help='Не скачивать книги. По умолчанию False.',
                                  default=False)
+    download_parser.add_argument('--library_file', type=str, default='library.json',
+                                 help='Название файла куда сохранится информация о книгах.')
+
     download_parser.set_defaults(func=start_crawling_books)
 
     categories_parser = subparsers.add_parser('show_categories', help='Show all categories')
@@ -188,36 +191,41 @@ def parse_books(args, book_links):
     library = []
     for book_link in tqdm(book_links):
         content = get_content(book_link)
-        if content:
-            soup = BeautifulSoup(content, 'lxml')
-            title = get_book_title(soup)
-            author = get_book_author(soup)
-            image_link = get_book_image_link(soup, book_link)
-            book_id = get_book_id(soup)
-            book_path = 'Skip download' if args.skip_txt else download_txt(
-                f'http://tululu.org/txt.php?id={book_id}', f'{title}.txt')
-            if not book_path:
-                continue
-            image_path = 'Skip images' if args.skip_imgs else download_image(image_link, f'{book_id}.jpg')
-            comments = get_book_comments(soup)
-            genres = get_book_genre(soup)
-            library.append({
-                'book_id': book_id,
-                'title': title,
-                'author': author,
-                'img_src': image_path,
-                'book_path': book_path,
-                'comments': comments,
-                'genres': genres
-            })
-            time.sleep(0.5)
-    with open('library.json', 'w', encoding='utf-8') as file:
+        if not content:
+            continue
+        soup = BeautifulSoup(content, 'lxml')
+        title = get_book_title(soup)
+        book_id = get_book_id(soup)
+        book_path = 'Skip download' if args.skip_txt else download_txt(
+            f'http://tululu.org/txt.php?id={book_id}', f'{title}.txt')
+        if not book_path:
+            continue
+        author = get_book_author(soup)
+        image_link = get_book_image_link(soup, book_link)
+        image_path = 'Skip images' if args.skip_imgs else download_image(image_link, f'{book_id}.jpg')
+        comments = get_book_comments(soup)
+        genres = get_book_genre(soup)
+        library.append({
+            'book_id': book_id,
+            'title': title,
+            'author': author,
+            'img_src': image_path,
+            'book_path': book_path,
+            'comments': comments,
+            'genres': genres
+        })
+        time.sleep(0.5)
+    with open(os.path.join('.', args.library_file), 'w', encoding='utf-8') as file:
         json.dump(library, file, ensure_ascii=False)
     for library_item in library:
         print('http://tululu.org/b{}/'.format(library_item['book_id']))
 
 
 def start_crawling_books(args):
+    extension = os.path.splitext(args.library_file)[-1]
+    if extension != '.json':
+        print('Файл с информацией о книгах должен быть в формате .json')
+        quit()
     try:
         start_page = args.start_page
         category_id = args.category_id
