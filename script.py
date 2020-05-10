@@ -144,7 +144,7 @@ def get_all_categories():
     print(f'Спарсил {len(categories_links)} категорий')
 
 
-def show_categories():
+def show_categories(args):
     get_all_categories()
     with open('categories.json', 'r', encoding='utf-8') as file:
         categories = json.load(file)
@@ -164,14 +164,23 @@ def get_end_page(category_id):
 
 def init_argparse():
     parser = argparse.ArgumentParser(description='Скачивание книг с сайта http://tululu.org/')
-    parser.add_argument('--start_page', type=int, default=1, help='Начальная страница.')
-    parser.add_argument('--end_page', type=int, help='Конечная страница.')
-    parser.add_argument('--category_id', type=int, default=55, help='Какую категорию хотим скачать. Указывать ID.')
-    parser.add_argument('--show_categories', action='store_true', help='Показать список всех категорий.')
-    parser.add_argument('--skip_imgs', action='store_true', help='Не скачивать картинки. По умолчанию False.',
-                        default=False)
-    parser.add_argument('--skip_txt', action='store_true', help='Не скачивать книги. По умолчанию False.',
-                        default=False)
+    subparsers = parser.add_subparsers(title='subcommands', description='valid subcommands')
+
+    download_parser = subparsers.add_parser('scraping', help='Start scraping books')
+    download_parser.add_argument('--start_page', type=int, default=1, help='Начальная страница.')
+    download_parser.add_argument('--end_page', type=int, help='Конечная страница.')
+    download_parser.add_argument('--category_id', type=int, default=55,
+                                 help='Какую категорию хотим скачать. Указывать ID.')
+    download_parser.add_argument('--skip_imgs', action='store_true',
+                                 help='Не скачивать картинки. По умолчанию False.',
+                                 default=False)
+    download_parser.add_argument('--skip_txt', action='store_true',
+                                 help='Не скачивать книги. По умолчанию False.',
+                                 default=False)
+    download_parser.set_defaults(func=start_crawling_books)
+
+    categories_parser = subparsers.add_parser('show_categories', help='Show all categories')
+    categories_parser.set_defaults(func=show_categories)
     return parser.parse_args()
 
 
@@ -208,11 +217,7 @@ def parse_books(args, book_links):
         print('http://tululu.org/b{}/'.format(library_item['book_id']))
 
 
-def main():
-    args = init_argparse()
-    if args.show_categories:
-        show_categories()
-        quit()
+def start_crawling_books(args):
     try:
         start_page = args.start_page
         category_id = args.category_id
@@ -229,6 +234,17 @@ def main():
         print(f'Catch key error:\n{error}')
     except requests.exceptions.ConnectionError as error:
         print(f'Connection error:\n{error}')
+
+
+def main():
+    args = init_argparse()
+    if not vars(args):
+        print('''
+            It should be run with parameters.
+            Type: python script.py -h
+            ''')
+    else:
+        args.func(args)
 
 
 if __name__ == '__main__':
