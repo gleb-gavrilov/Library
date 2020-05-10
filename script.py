@@ -13,7 +13,10 @@ import re
 
 def check_redirect(response):
     if response.is_redirect:
-        raise requests.HTTPError(f'Found redirect {response.url}')
+        try:
+            raise requests.HTTPError(f'Found redirect {response.url}')
+        except requests.HTTPError as error:
+            print(error)
 
 
 def download_txt(url, filename, folder='books'):
@@ -51,13 +54,13 @@ def get_content(url):
 
 def get_book_title(soup):
     tag_h1 = soup.select_one('h1')
-    title = tag_h1.text.split('::')[0] if tag_h1 else 'No title'
+    title = tag_h1.text.split('::')[0] if tag_h1 else None
     return title.strip()
 
 
 def get_book_author(soup):
     tag_h1 = soup.select_one('h1')
-    author = tag_h1.text.split('::')[1] if tag_h1 else 'No Author'
+    author = tag_h1.text.split('::')[1] if tag_h1 else None
     return author.strip()
 
 
@@ -69,17 +72,13 @@ def get_book_image_link(soup, url):
 
 def get_book_comments(soup):
     comments_tags = soup.select('.texts .black')
-    comments = []
-    for comment in comments_tags:
-        comments.append(comment.text)
+    comments = [comment.text for comment in comments_tags]
     return comments
 
 
 def get_book_genre(soup):
     tag_genre = soup.select_one('span.d_book').select('a')
-    genres = []
-    for genre in tag_genre:
-        genres.append(genre.text)
+    genres = [genre.text for genre in tag_genre]
     return genres
 
 
@@ -90,12 +89,7 @@ def get_book_id(soup):
 
 def get_book_links(soup):
     books_cards = soup.select('.bookimage a')
-    book_links = []
-    for book_card in books_cards:
-        link = urljoin('http://tululu.org/', book_card['href'])
-        book_links.append(
-            link
-        )
+    book_links = [urljoin('http://tululu.org/', book_card['href']) for book_card in books_cards]
     return book_links
 
 
@@ -108,8 +102,7 @@ def parse_links_from_pagination(category_id, start_page, max_page):
             content = get_content(f'http://tululu.org/l{category_id}/{id}/')
             if content:
                 soup = BeautifulSoup(content, 'lxml')
-                for link in get_book_links(soup):
-                    book_links.append(link)
+                [book_links.append(link) for link in get_book_links(soup)]
             time.sleep(0.5)
         return book_links
     except requests.exceptions.HTTPError as error:
