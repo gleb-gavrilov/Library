@@ -12,43 +12,47 @@
     pip install -r requirements.txt
 
 ## Примеры запуска
-Скрипт можно запускать с аргументами:
+В скрипт встроено два мода:
 
-    --start_page Начальная страница.
-    --end_page Конечная страница.
-    --category_id Какую категорию хотим скачать. Указывать ID.
-    --show_categories Показать список всех категорий.
-    --skip_imgs Не скачивать картинки. По умолчанию False.
-    --skip_txt  Не скачивать книги. По умолчанию False.
+* Показать все доступные категории на сайте ( `show_categories` );
+* Скачать книги ( `scraping` )
+    * Дополнительные параметры могут быть такие:
+        * `--start_page` Начальная страница.
+        * `--end_page` Конечная страница.
+        * `--category_id` Какую категорию хотим скачать. Указывать ID.
+        * `--show_categories` Показать список всех категорий.
+        * `--skip_imgs` Не скачивать картинки. По умолчанию False.
+        * `--skip_txt`  Не скачивать книги. По умолчанию False.
+    
 
-Если запускать просто без аргументов:
+Если запускать просто без дополнительных аргументов:
 
-    python script.py
+    python script.py scraping
  
 то по умолчанию будет скачиваться вся категория [научной фантастики](http://tululu.org/l55/).
 
 Информация по книгам сохранится в файл `library.json`. Рядом со скриптом будут созданы папки `books` и `images` — 
-где соответственно будут лежать тексты книг и изображения.
+где соответственно будут лежать тексты книг и изображения. По дефолту сохраняется всё рядом со скриптом.
 
 Чтобы посмотреть список всех категорий:
 
-    python script.py --show_categories
+    python script.py show_categories
 
 Для парсинга определенной категории нужно передать её **ID**. Например, надо скачать категорию **Физика** ( у неё id 104 ):
 
-    python script.py --category_id 104 
+    python script.py scraping --category_id 104 
 
 Если нам надо ограничить скачивание, то надо передать аргументы `--start_page` и `--end_page`. Например, категория **Политика**:
 
-    python script.py --start_page 1 --end_page 10 --category_id 59 
+    python script.py scraping --start_page 1 --end_page 10 --category_id 59 
 
 Также можно ограничить скачивание изображений к книгам `--skip_imgs` или самих книг `--skip_txt`.
 
 Скачать книги из раздела **Политика** с 1 по 10 стр., но изображения не будут загружаться:
 
-    python script.py --start_page 1 --end_page 10 --category_id 59 --skip_imgs
+    python script.py scraping --start_page 1 --end_page 10 --category_id 59 --skip_imgs
 
 Скачать информацию по книгам из раздела **Политика** с 1 по 10 стр., но сами тексты книг не будут загружаться.  
 
-    python script.py --start_page 1 --end_page 10 --category_id 59 --skip_txt
+    python script.py scraping --start_page 1 --end_page 10 --category_id 59 --skip_txt
 
