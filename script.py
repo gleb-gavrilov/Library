@@ -145,12 +145,14 @@ def get_all_categories():
 
 
 def show_categories():
+    get_all_categories()
     with open('categories.json', 'r', encoding='utf-8') as file:
         categories = json.load(file)
     categories = sorted(categories, key=lambda d: d["category_name"])
     print('{:<35} {:<25} {:<5}'.format('Категория', 'Ссылка', 'ID'))
     for category in categories:
-        print('{:<35} {:<25} {:<5}'.format(category['category_name'], category['category_link'], category['category_id']))
+        print(
+            '{:<35} {:<25} {:<5}'.format(category['category_name'], category['category_link'], category['category_id']))
 
 
 def get_end_page(category_id):
@@ -165,16 +167,12 @@ def main():
     parser.add_argument('--start_page', type=int, help='Начальная страница.')
     parser.add_argument('--end_page', type=int, help='Конечная страница.')
     parser.add_argument('--category_id', type=int, help='Какую категорию хотим скачать. Указывать ID.')
-    parser.add_argument('--update_categories', action='store_true', help='Обновить список категорий с сайта.')
     parser.add_argument('--show_categories', action='store_true', help='Показать список всех категорий.')
     parser.add_argument('--skip_imgs', action='store_true', help='Не скачивать картинки. По умолчанию False.', default=False)
     parser.add_argument('--skip_txt', action='store_true', help='Не скачивать книги. По умолчанию False.', default=False)
     args = parser.parse_args()
     if args.show_categories:
         show_categories()
-        quit()
-    if args.update_categories:
-        get_all_categories()
         quit()
     library = []
     try:
