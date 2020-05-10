@@ -11,12 +11,16 @@ import argparse
 import re
 
 
+def check_redirect(response):
+    if response.is_redirect:
+        raise requests.HTTPError(f'Found redirect {response.url}')
+
+
 def download_txt(url, filename, folder='books'):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
-    if response.is_redirect:
-        return False
+    check_redirect(response)
     filename = sanitize_filename(filename)
     path = os.path.join(folder, filename)
     with open(path, 'w', encoding='utf-8') as file:
@@ -28,6 +32,7 @@ def download_image(url, filename, folder='images'):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
+    check_redirect(response)
     path = os.path.join(folder, filename)
     with open(path, 'wb') as file:
         file.write(response.content)
@@ -40,9 +45,7 @@ def get_content(url):
     }
     response = requests.get(url, headers=headers, allow_redirects=False)
     response.raise_for_status()
-    if response.status_code >= 300 and response.status_code <= 399:
-        print(f'Found redirect {url}')
-        return None
+    check_redirect(response)
     return response.text
 
 
