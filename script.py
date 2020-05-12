@@ -180,36 +180,41 @@ def init_argparse():
 
     categories_parser = subparsers.add_parser('show_categories', help='Show all categories')
     categories_parser.set_defaults(func=show_categories)
-    return parser.parse_args()
+    return parser
+
+
+def get_book(book_info, book_link, args):
+    content = get_content(book_link)
+    if not content:
+        return book_info
+    soup = BeautifulSoup(content, 'lxml')
+    title = get_book_title(soup)
+    book_id = get_book_id(soup)
+    book_path = 'Skip download' if args.skip_txt else download_txt(
+        f'http://tululu.org/txt.php?id={book_id}', f'{title}.txt')
+    if not book_path:
+        return book_info
+    author = get_book_author(soup)
+    image_link = get_book_image_link(soup, book_link)
+    image_path = 'Skip images' if args.skip_imgs else download_image(image_link, f'{book_id}.jpg')
+    comments = get_book_comments(soup)
+    genres = get_book_genre(soup)
+    book_info.append({
+        'book_id': book_id,
+        'title': title,
+        'author': author,
+        'img_src': image_path,
+        'book_path': book_path,
+        'comments': comments,
+        'genres': genres
+    })
+    return book_info
 
 
 def parse_books(args, book_links):
     library = []
     for book_link in tqdm(book_links):
-        content = get_content(book_link)
-        if not content:
-            continue
-        soup = BeautifulSoup(content, 'lxml')
-        title = get_book_title(soup)
-        book_id = get_book_id(soup)
-        book_path = 'Skip download' if args.skip_txt else download_txt(
-            f'http://tululu.org/txt.php?id={book_id}', f'{title}.txt')
-        if not book_path:
-            continue
-        author = get_book_author(soup)
-        image_link = get_book_image_link(soup, book_link)
-        image_path = 'Skip images' if args.skip_imgs else download_image(image_link, f'{book_id}.jpg')
-        comments = get_book_comments(soup)
-        genres = get_book_genre(soup)
-        library.append({
-            'book_id': book_id,
-            'title': title,
-            'author': author,
-            'img_src': image_path,
-            'book_path': book_path,
-            'comments': comments,
-            'genres': genres
-        })
+        library = get_book(library, book_link, args)
         time.sleep(0.5)
     with open(os.path.join('.', args.library_file), 'w', encoding='utf-8') as file:
         json.dump(library, file, ensure_ascii=False)
@@ -241,7 +246,8 @@ def start_crawling_books(args):
 
 
 def main():
-    args = init_argparse()
+    parser = init_argparse()
+    args = parser.parse_args()
     if not vars(args):
         print('''
             It should be run with parameters.
