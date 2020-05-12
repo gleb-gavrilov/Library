@@ -216,8 +216,14 @@ def get_book(book_info, book_link, args):
 def parse_books(args, book_links):
     library = []
     for book_link in tqdm(book_links):
-        library = get_book(library, book_link, args)
-        time.sleep(0.5)
+        try:
+            library = get_book(library, book_link, args)
+            time.sleep(0.5)
+        except requests.HTTPError as error:
+            print(f'Can`t get data:\n{error}')
+        except requests.ConnectionError as error:
+            print(f'Connection error:\n{error}')
+            time.sleep(5)
     with open(os.path.join('.', args.library_file), 'w', encoding='utf-8') as file:
         json.dump(library, file, ensure_ascii=False)
     for library_item in library:
@@ -229,23 +235,15 @@ def start_crawling_books(args):
     if extension != '.json':
         print('Файл с информацией о книгах должен быть в формате .json')
         quit()
-    try:
-        start_page = args.start_page
-        category_id = args.category_id
-        end_page = args.end_page if args.end_page else get_end_page(category_id)
-        if start_page > end_page:
-            print('start_page не может быть больше end_page')
-            quit()
-        book_links = parse_links_from_pagination(category_id, start_page, end_page)
-        print(f'Спарсил {len(book_links)} ссылок на книги. Приступаю к их граббингу.')
-        parse_books(args, book_links)
-    except requests.HTTPError as error:
-        print(f'Can`t get data:\n{error}')
-    except KeyError as error:
-        print(f'Catch key error:\n{error}')
-    except requests.ConnectionError as error:
-        print(f'Connection error:\n{error}')
-        time.sleep(5)
+    start_page = args.start_page
+    category_id = args.category_id
+    end_page = args.end_page if args.end_page else get_end_page(category_id)
+    if start_page > end_page:
+        print('start_page не может быть больше end_page')
+        quit()
+    book_links = parse_links_from_pagination(category_id, start_page, end_page)
+    print(f'Спарсил {len(book_links)} ссылок на книги. Приступаю к их граббингу.')
+    parse_books(args, book_links)
 
 
 def main():
