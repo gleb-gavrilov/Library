@@ -9,21 +9,24 @@ from urllib.parse import urljoin
 import json
 import argparse
 import re
+from random import randint
 
 
 def check_redirect(response):
     if response.is_redirect:
-        try:
-            raise requests.HTTPError(f'Found redirect {response.url}')
-        except requests.HTTPError as error:
-            print(error)
+        raise requests.HTTPError(f'Found redirect {response.url}')
+
+
+def get_from_tululu(url):
+    response = requests.get(url, allow_redirects=False)
+    response.raise_for_status()
+    check_redirect(response)
+    return response
 
 
 def download_txt(url, filename, folder='books'):
     Path(folder).mkdir(parents=True, exist_ok=True)
-    response = requests.get(url, allow_redirects=False)
-    response.raise_for_status()
-    check_redirect(response)
+    response = get_from_tululu(url)
     filename = sanitize_filename(filename)
     path = os.path.join(folder, filename)
     with open(path, 'w', encoding='utf-8') as file:
@@ -33,8 +36,7 @@ def download_txt(url, filename, folder='books'):
 
 def download_image(url, filename, folder='images'):
     Path(folder).mkdir(parents=True, exist_ok=True)
-    response = requests.get(url, allow_redirects=False)
-    response.raise_for_status()
+    response = get_from_tululu(url)
     check_redirect(response)
     path = os.path.join(folder, filename)
     with open(path, 'wb') as file:
@@ -191,12 +193,12 @@ def get_book(book_info, book_link, args):
     title = get_book_title(soup)
     book_id = get_book_id(soup)
     book_path = 'Skip download' if args.skip_txt else download_txt(
-        f'http://tululu.org/txt.php?id={book_id}', f'{title}.txt')
+        f'http://tululu.org/txt.php?id={book_id}', f'{title}_{randint(999, 999999)}.txt')
     if not book_path:
         return book_info
     author = get_book_author(soup)
     image_link = get_book_image_link(soup, book_link)
-    image_path = 'Skip images' if args.skip_imgs else download_image(image_link, f'{book_id}.jpg')
+    image_path = 'Skip images' if args.skip_imgs else download_image(image_link, f'{book_id}_{randint(999, 999999)}.jpg')
     comments = get_book_comments(soup)
     genres = get_book_genre(soup)
     book_info.append({
