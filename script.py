@@ -53,20 +53,20 @@ def get_content(url):
 
 
 def get_book_title(soup):
-    tag_h1 = soup.select_one('h1')
-    title = tag_h1.text.split('::')[0] if tag_h1 else None
+    title = soup.select_one('h1')
+    title = title.text.split('::')[0] if title else None
     return title.strip()
 
 
 def get_book_author(soup):
-    tag_h1 = soup.select_one('h1')
-    author = tag_h1.text.split('::')[1] if tag_h1 else None
+    author = soup.select_one('h1')
+    author = author.text.split('::')[1] if author else None
     return author.strip()
 
 
 def get_book_image_link(soup, url):
-    tag_image = soup.select_one('.bookimage img')
-    path_image = urljoin(url, tag_image['src'])
+    image = soup.select_one('.bookimage img')
+    path_image = urljoin(url, image['src'])
     return path_image
 
 
@@ -237,12 +237,13 @@ def start_crawling_books(args):
         book_links = parse_links_from_pagination(category_id, start_page, end_page)
         print(f'Спарсил {len(book_links)} ссылок на книги. Приступаю к их граббингу.')
         parse_books(args, book_links)
-    except requests.exceptions.HTTPError as error:
+    except requests.HTTPError as error:
         print(f'Can`t get data:\n{error}')
     except KeyError as error:
         print(f'Catch key error:\n{error}')
-    except requests.exceptions.ConnectionError as error:
+    except requests.ConnectionError as error:
         print(f'Connection error:\n{error}')
+        time.sleep(5)
 
 
 def main():
