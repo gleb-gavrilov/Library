@@ -24,7 +24,7 @@
             <div class="card-body">
               <h5 class="card-title">{{book.title.capitalize()}}</h5>
               <p class="card-text">{{book.author.title()}}</p>
-              <p class="card-text"><small class="text-muted">Last updated 2 mins ago</small></p>
+              <p class="card-text"><a href="{{book.book_path|urlencode}}" target="_blank">Читать</a> </p>
             </div>
           </div>
         </div>
