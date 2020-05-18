@@ -3,6 +3,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
 from more_itertools import chunked
 import math
+from pathlib import Path
 
 
 def on_reload():
@@ -13,12 +14,15 @@ def on_reload():
     template = env.get_template('template.html')
     with open('library.json', encoding='utf-8') as file:
         library = json.load(file)
-    length = len(library) / 2
-    length = math.ceil(length)
-    library = chunked(library, length)
-    rendered_page = template.render(library=library)
-    with open('index.html', 'w', encoding='utf-8') as file:
-        file.write(rendered_page)
+    books_on_page = 20
+    chunked_library = chunked(library, books_on_page)
+    for num, library in enumerate(chunked_library):
+        library = chunked(library, 2)
+        rendered_page = template.render(library=library)
+        Path(f'pages').mkdir(parents=True, exist_ok=True)
+        with open(f'pages/index{num}.html', 'w', encoding='utf-8') as file:
+            file.write(rendered_page)
+
 
 
 def main():
