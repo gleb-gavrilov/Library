@@ -15,10 +15,12 @@ def on_reload():
     with open('library.json', encoding='utf-8') as file:
         library = json.load(file)
     books_on_page = 20
+    total_pages = len(library) / books_on_page
+    total_pages = math.ceil(total_pages)
     chunked_library = chunked(library, books_on_page)
     for num, library in enumerate(chunked_library):
         library = chunked(library, 2)
-        rendered_page = template.render(library=library)
+        rendered_page = template.render(library=library, total_pages=total_pages)
         Path(f'pages').mkdir(parents=True, exist_ok=True)
         with open(f'pages/index{num}.html', 'w', encoding='utf-8') as file:
             file.write(rendered_page)
