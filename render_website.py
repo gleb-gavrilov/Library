@@ -20,7 +20,11 @@ def on_reload():
     chunked_library = chunked(library, books_on_page)
     for num, library in enumerate(chunked_library):
         library = chunked(library, 2)
-        rendered_page = template.render(library=library, total_pages=total_pages)
+        rendered_page = template.render(library=library,
+                                        total_pages=total_pages,
+                                        current_page=num,
+                                        next_page=num+1,
+                                        prev_page=num-1)
         Path(f'pages').mkdir(parents=True, exist_ok=True)
         with open(f'pages/index{num}.html', 'w', encoding='utf-8') as file:
             file.write(rendered_page)
