@@ -61,4 +61,6 @@
 
 ### Рендеринг сайта
 Теперь, когда файл с книгами получен, можно запустить `render_website.py` для генерации `html` страниц.
-Должно получиться [такое](https://webjunior.github.io/Library-render/pages/index0.html).
+Должно получиться [такое](https://webjunior.github.io/Library-render/pages/index1.html).
+
+Скачать готовый оффлайн сайт можно [тут](https://github.com/WebJunior/Library-render).
