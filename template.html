@@ -4,11 +4,11 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
+    <link rel="shortcut icon" href="../static/favicon.png" type="image/png">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>Hello, world!</title>
+    <title>Page {{current_page}}</title>
   </head>
   <body>
   <div class="container">
@@ -50,7 +50,7 @@
               {% for genre in book.genres %}
                 <span class="badge badge-secondary">{{genre}}</span>
               {% endfor %}
-              <p class="card-text"><a href="../{{book.book_path|urlencode}}" target="_blank">Читать</a> </p>
+              <p class="card-text"><a href="../{{book.book_path}}" target="_blank">Читать</a> </p>
             </div>
           </div>
         </div>
