@@ -18,7 +18,7 @@ def on_reload():
     total_pages = len(library) / books_on_page
     total_pages = math.ceil(total_pages)
     chunked_library = chunked(library, books_on_page)
-    for num, library in enumerate(chunked_library):
+    for num, library in enumerate(chunked_library, 1):
         library = chunked(library, 2)
         rendered_page = template.render(library=library,
                                         total_pages=total_pages,
